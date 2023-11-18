@@ -1,6 +1,7 @@
 package praktikum;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -8,6 +9,9 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import praktikum.constants.NameConstant;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BurgerTest {
@@ -23,6 +27,15 @@ public class BurgerTest {
 
     @Spy
     private Burger burger;
+
+    private Pattern bunPattern;
+    private Pattern ingredientsPattern;
+
+    @Before
+    public void init() {
+        bunPattern = Pattern.compile("\\(={4}\\s.{0,}\\s={4}\\)");
+        ingredientsPattern = Pattern.compile("={1}\\s.{0,}\\s={1}");
+    }
 
     @Test
     public void shouldSetBun() {
@@ -70,10 +83,16 @@ public class BurgerTest {
 
         burger.setBuns(bun);
         burger.addIngredient(ingredient);
-        String actual = burger.getReceipt();
+        burger.addIngredient(ingredient);
 
-        Assert.assertTrue(actual.contains(NameConstant.BUN_NAME.getName()));
-        Assert.assertTrue(actual.contains(NameConstant.INGREDIENT_NAME.getName()));
-        Assert.assertTrue(actual.contains(IngredientType.SAUCE.toString().toLowerCase()));
+        String[] strings = burger.getReceipt().trim().split("\n");
+        for(int i =0; i < strings.length - 3; i++) {
+            if(i == 0 || i == strings.length - 3) {
+                Assert.assertTrue(bunPattern.matcher(strings[i]).find());
+            }else {
+                Assert.assertTrue(ingredientsPattern.matcher(strings[i]).find());
+            }
+        }
+        Assert.assertTrue(strings[strings.length-1].contains("Price:"));
     }
 }
